@@ -23,7 +23,6 @@ from openoa.schema.metadata import ANALYSIS_REQUIREMENTS, PlantMetaData
 from openoa.utils.metadata_fetch import attach_eia_data
 from openoa.utils.unit_conversion import convert_power_to_energy
 
-
 setup_logging(level="WARNING")
 logger = logging.getLogger(__name__)
 
@@ -376,11 +375,9 @@ class PlantData:
             - "ElectricalLosses": Checks the data components that are relevant to an
               electrical losses analysis.
             - "WakeLosses-scada": Checks the data components that are relevant to a
-              wake losses analysis that uses the SCADA-based wind speed and direction
-              data.
+              wake losses analysis that uses the SCADA-based wind direction data.
             - "WakeLosses-tower": Checks the data components that are relevant to a
-              wake losses analysis that uses the met tower-based wind speed and
-              direction data.
+              wake losses analysis that uses the met tower-based wind direction data.
 
         scada (``pd.DataFrame``): Either the SCADA data that's been pre-loaded to a
             pandas `DataFrame`, or a path to the location of the data to be imported.
@@ -443,8 +440,8 @@ class PlantData:
         default={"missing": {}, "dtype": {}, "frequency": {}, "attributes": []}, init=False
     )
     eia: dict = field(default={}, init=False)
-    asset_distance_matrix: pd.DataFrame = field(init=False)
-    asset_direction_matrix: pd.DataFrame = field(init=False)
+    asset_distance_matrix: pd.DataFrame = field(init=False, default=pd.DataFrame([]))
+    asset_direction_matrix: pd.DataFrame = field(init=False, default=pd.DataFrame([]))
 
     def __attrs_post_init__(self):
         """Post-initialization hook."""
@@ -1043,7 +1040,7 @@ class PlantData:
 
             ws = col_map["WMETR_HorWdSpd"]
             if ws not in df and has_u_v:
-                df[ws] = np.sqrt(df[u].values ** 2 + df[v].values ** 2)
+                df[ws] = met.compute_wind_speed(df[u], df[v]).values
 
             wd = col_map["WMETR_HorWdDir"]
             if wd not in df and has_u_v:

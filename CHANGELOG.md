@@ -1,6 +1,36 @@
 # Changelog
 All notable changes to this project will be documented in this file. If you make a notable change to the project, please add a line describing the change to the "unreleased" section. The maintainers will make an effort to keep the [Github Releases](https://github.com/NREL/OpenOA/releases) page up to date with this changelog. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## v3.2 - 2026-01-29
+
+- Features and updates:
+  - `WakeLosses` updates
+    - Option added to the `WakeLosses` analysis method to correct for freestream wind speed
+      heterogeneity across a wind plant when estimating internal wake losses. The method relies on
+      a user-provided freestream wind speedup csv file. The wake loss example notebook has been
+      updated to illustrate how to use this option.
+    - `WakeLosses` analysis method updated to flag and exclude unrealistic turbine wind speed
+      measurements
+  - `MonteCarloAEP` updates
+    - Add an `n_jobs` input to the Monte Carlo AEP method to allow for the underlying models to be
+      parallelized during each iteration for faster ML model computation.
+    - Add an `apply_iav` input to the Monte Carlo AEP analysis method to toggle the addition of the
+      IAV factor at the end of the analysis.
+    - Add a `progress_bar` flag to `MonteCarloAEP.run()` to allow for turing on or off the
+      simulation's default progress bar.
+  - Option added to the IEC power curve model in the `openoa/utils/power_curve/functions` module to
+    linearly interpolate power between wind speed bin centers
+  - Implement missing `compute_wind_speed` in `openoa/utils/met_data_processing.py` and apply it to
+    the `PlantData` reanalysis validation steps in place of the manual calculation.
+  - Functions for downloading hourly ERA5 and MERRA-2 reanalysis data added to the
+    `openoa/utils/downloader` module.
+- Fixes:
+  - Add a default value for `PlantData`'s `asset_distance_matrix` and `asset_direction_matrix` to
+    ensure projects not utilizing location data are compatible.
+  - Fix miscellaneous pandas warnings.
+  - Rerun pre-commit and update code styling for adherence to 3.10+ standards.
+  - Replace mutable default arguments with None and handle Nones internally.
+
 ## v3.1.4 - 2026-01-29
 
 - During the custom test collection, convert the `Path` objects to `str` to avoid issues with the

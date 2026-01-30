@@ -17,7 +17,6 @@ from tabulate import tabulate
 
 from openoa.logging import logging, logged_method_call
 
-
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("once", category=DeprecationWarning)
 
@@ -148,7 +147,7 @@ ANALYSIS_REQUIREMENTS = {
             "freq": _at_least_hourly,
         },
         "tower": {
-            "columns": ["asset_id", "WMET_HorWdSpd", "WMET_HorWdDir"],
+            "columns": ["asset_id", "WMET_HorWdDir"],
             "freq": _at_least_hourly,
         },
         "reanalysis": {
