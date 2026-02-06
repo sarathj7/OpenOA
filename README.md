@@ -28,6 +28,38 @@
 - Read the [documentation](https://openoa.readthedocs.io/en/latest/).
 - Learn how to [contribute](contributing.md).
 
+## Wind Farm Performance Dashboard (Full-stack App)
+
+This repository now also includes a **full-stack web dashboard** that uses OpenOA as the backend analytics engine.
+
+### Run locally (recommended: Docker)
+
+Prerequisite: Docker Desktop (or Docker Engine + Compose).
+
+```bash
+docker compose up --build
+```
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`)
+
+### Demo credentials
+
+- `viewer` / `viewer123`
+- `engineer` / `engineer123`
+- `admin` / `admin123`
+
+### Project layout
+
+- `backend/`: FastAPI API layer that wraps OpenOA and serves dashboard endpoints
+- `frontend/`: Next.js + Tailwind dashboard UI
+- `docker-compose.yml`: runs both services together
+
+### Cloud deployment notes
+
+- **Frontend (Vercel)**: deploy the `frontend/` directory as a Next.js project and set `NEXT_PUBLIC_API_URL` to your backend URL.
+- **Backend (Render/AWS/Azure)**: deploy the `backend/Dockerfile` container; expose port `8000` and set `JWT_SECRET_KEY` and `BACKEND_CORS_ORIGINS`.
+
 OpenOA [^1] is a software framework written in Python for assessing wind plant performance using
 operational assessment (OA) methodologies that consume time series data from wind plants. The goal
 of the project is to provide an open source implementation of common data structures, analysis

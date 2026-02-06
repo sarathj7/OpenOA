@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: theme(colors.dashboard.bg);
+  color: theme(colors.dashboard.text);
+}
+
+* {
+  scrollbar-color: rgba(148, 163, 184, 0.35) rgba(2, 6, 23, 0.75);
+  scrollbar-width: thin;
+}
+
