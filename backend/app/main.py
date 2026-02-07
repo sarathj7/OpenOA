@@ -1,49 +1,69 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routers import auth, metrics, analysis, turbines, geospatial
+from app.config import settings
+import os
 
-from .config import get_settings
-from .routers.auth import router as auth_router
-from .routers.analysis import router as analysis_router
-from .routers.geospatial import router as geospatial_router
-from .routers.metrics import router as metrics_router
-from .routers.turbines import router as turbines_router
+app = FastAPI(title="OpenOA API")
 
+# ------------------ CORS FIX ------------------
 
-def create_app() -> FastAPI:
-    settings = get_settings()
+origins = []
 
-    app = FastAPI(title="OpenOA Wind Farm Analytics API", version="0.1.0")
+# Read CORS origins from environment
+cors_env = os.getenv("BACKEND_CORS_ORIGINS")
 
-    # ------------------------------------------------------------------
-    # FIXED CORS CONFIGURATION
-    # ------------------------------------------------------------------
-    # Instead of relying on environment variables (which are failing on Render),
-    # we explicitly allow all origins for this test deployment.
-    # This guarantees frontend login will work.
+if cors_env:
+    try:
+        # Expecting JSON array string
+        import json
+        origins = json.loads(cors_env)
+    except Exception:
+        origins = [cors_env]
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],        # Allow all origins
-        allow_credentials=True,
-        allow_methods=["*"],        # Allow all HTTP methods
-        allow_headers=["*"],        # Allow all headers
-    )
+# Always allow Render frontend if not already present
+render_frontend = "https://openoa-frontend-pcuc.onrender.com"
 
-    # Include API routers
-    app.include_router(metrics_router, prefix=settings.api_v1_prefix)
-    app.include_router(turbines_router, prefix=settings.api_v1_prefix)
-    app.include_router(analysis_router, prefix=settings.api_v1_prefix)
-    app.include_router(geospatial_router, prefix=settings.api_v1_prefix)
-    app.include_router(auth_router, prefix=settings.api_v1_prefix)
+if render_frontend not in origins:
+    origins.append(render_frontend)
 
-    @app.get("/health", tags=["system"])
-    async def health_check():
-        return {
-            "status": "ok",
-            "message": "CORS is globally enabled (test mode)"
-        }
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    return app
+# ------------------ ROUTERS ------------------
+
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(metrics.router, prefix="/api/metrics", tags=["metrics"])
+app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
+app.include_router(turbines.router, prefix="/api/turbines", tags=["turbines"])
+app.include_router(geospatial.router, prefix="/api/geospatial", tags=["geospatial"])
 
 
-app = create_app()
+@app.get("/")
+def root():
+    return {
+        "message": "OpenOA Backend Running",
+        "cors_allowed": origins
+    }
+
+
+# ------------------ DATA LOADING FIX ------------------
+
+from openoa.schema.metadata import Metadata
+
+DATA_PATH = "/app/examples/plantdata.yml"
+
+if not os.path.exists(DATA_PATH):
+    DATA_PATH = "examples/plantdata.yml"
+
+try:
+    metadata = Metadata.from_yaml(DATA_PATH)
+    print("Successfully loaded plant metadata")
+except Exception as e:
+    print("ERROR LOADING METADATA:", e)
+    metadata = None
