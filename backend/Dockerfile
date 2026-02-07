@@ -2,23 +2,25 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# System deps for scientific/python packages (kept minimal)
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential \
-  && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy repo (includes openoa + examples + backend)
-COPY . /app
+# Copy requirements first for caching
+COPY backend/requirements.txt .
 
-# Install OpenOA from source so `examples/` is importable too
-RUN pip install --no-cache-dir -U pip \
-  && pip install --no-cache-dir -e . \
-  && pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Copy entire backend application
+COPY backend /app/backend
 
+# ALSO COPY EXAMPLES DATA (important for plantdata.yml)
+COPY examples /app/examples
+
+# Expose API port
 EXPOSE 8000
 
+# Run FastAPI
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
