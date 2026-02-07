@@ -1,13 +1,10 @@
 import axios from "axios";
 
-// Use environment variable if available
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "API_URL_NOT_SET_AT_BUILD_TIME";
+const apiBaseUrl = "https://openoa-backend-zyxa.onrender.com";
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
-  timeout: 30000,
+  timeout: 30_000,
   headers: {
     "Content-Type": "application/json"
   }
@@ -15,13 +12,8 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window === "undefined") return config;
-
   const token = localStorage.getItem("accessToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
