@@ -1,24 +1,18 @@
 import axios from "axios";
 
-// Ensure the API URL is correctly set at build time
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
-
-if (!apiBaseUrl) {
-  throw new Error(
-    "NEXT_PUBLIC_API_URL environment variable is not defined. " +
-    "Frontend cannot connect to backend."
-  );
-}
+// Use environment variable if available
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "API_URL_NOT_SET_AT_BUILD_TIME";
 
 export const api = axios.create({
-  baseURL: apiBaseUrl,   // <-- THIS ENSURES REQUESTS GO TO BACKEND
+  baseURL: apiBaseUrl,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json"
   }
 });
 
-// Attach JWT token if present
 api.interceptors.request.use((config) => {
   if (typeof window === "undefined") return config;
 
@@ -31,7 +25,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth failures globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
